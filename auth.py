@@ -187,21 +187,25 @@ def get_args():
     Parse some basic configuration from command line arguments
     '''
 
+    # build command line argument parser
     desc = 'ejabberd authentication script'
     parser = argparse.ArgumentParser(description=desc)
 
+    # base url
     parser.add_argument('--url',
+            default=FALLBACK_URL,
             help='base URL')
+    # log file location
+    parser.add_argument('--log',
+            default=DEFAULT_LOG,
+            help='log file')
+    # debug log level
     parser.add_argument('--debug', action='store_const', const=True,
             help='toggle debug mode')
-    parser.add_argument('--log',
-            help='log file')
 
     args = vars(parser.parse_args())
-    url = args['url'] if args['url'] else FALLBACK_URL
-    logfile = args['log'] if args['log'] else DEFAULT_LOG
 
-    return url, args['debug'], logfile
+    return args['url'], args['debug'], args['log']
 
 
 if __name__ == '__main__':
