@@ -192,7 +192,9 @@ def get_args():
     parser = argparse.ArgumentParser(description=desc)
 
     # base url
-    parser.add_argument('--url',
+    parser.add_argument('url',
+            nargs='?',
+            metavar='URL',
             default=FALLBACK_URL,
             help='base URL')
     # log file location
