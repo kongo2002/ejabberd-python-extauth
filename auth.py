@@ -1,93 +1,182 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
+import argparse
 import json
 import logging
-import os
 import struct
 import sys
-import urllib2
 
-# may be we need this one later
-# import hashlib
+HEADERS = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json' }
 
-URL = 'http://localhost:8000/auth/'
-HEADERS = { 'Content-Type': 'application/json' }
 
+class RequestsHandler:
+    '''
+    Small wrapper class to use 'requests' to execute HTTP requests.
+    '''
+    import requests
+
+    def __init__(self, url, headers):
+        logging.info('Using requests library for HTTP requests')
+
+        self.url = url
+        self.headers = headers
+
+    def call(self, data):
+        res = requests.post(self.url, data, self.headers)
+        return res.json()
+
+class UrlLibHandler:
+    '''
+    Small wrapper class to use 'urllib2' to execute HTTP requests.
+    '''
+
+    def __init__(self, url, headers):
+        import urllib2
+        logging.info('Using urllib2 library for HTTP requests')
+
+        self.url = url
+        self.headers = headers
+
+    def call(self, data):
+        req = urllib2.Request(self.url, data, self.headers)
+        res = urllib2.urlopen(req)
+        return json.load(res)
+
+class ApiHandler:
+    '''
+    Class to execute the HTTP requests to process
+    the authentication orders from ejabberd.
+    '''
+
+    def __init__(self, url, headers):
+        self.handler = None
+
+        # first we try the 'requests' library
+        # afterwards the 'urllib2' is tried to load
+        try:
+            self.handler = RequestsHandler(url, headers)
+        except ImportError:
+            self.handler = UrlLibHandler(url, headers)
+
+    def call(self, data):
+        return self.handler.call(data)
+
+def get_args():
+    fallback_url = 'http://localhost:8000/auth/'
+
+    p = argparse.ArgumentParser(description='ejabberd authentication script')
+    p.add_argument('--url', help='base URL')
+    p.add_argument('--debug', action='store_const', const=True, help='toggle debug mode')
+
+    args = vars(p.parse_args())
+    url = args['url'] if args['url'] else fallback_url
+
+    return url, args['debug']
 
 def from_ejabberd():
+    '''
+    Listen on stdin and read input data sent from to
+    connected ejabberd instance.
+    '''
+
     try:
         input_length = sys.stdin.read(2)
 
         if len(input_length) is not 2:
-            logging.debug('wrong input')
+            logging.warn('ejabberd called with invalid input')
             return None
 
         (size,) = struct.unpack('>h', input_length)
         result = sys.stdin.read(size)
 
-        logging.info('Read %d bytes: %s', size, result)
+        logging.debug('Read %d bytes: %s', size, result)
 
         return result.split(':')
     except:
         return None
 
-def to_ejabberd(bool):
+def to_ejabberd(success):
+    '''
+    Convert the input data into an ejabberd compatible input
+    and send those to stdout.
+    '''
+
     answer = 0
-    if bool:
-        answer = 1
+    if success: answer = 1
+
     token = struct.pack('>hh', 2, answer)
+
     sys.stdout.write(token)
     sys.stdout.flush()
 
-def call_api(data):
+def call_api(handler, data):
+    '''
+    Call the JSON compatible API handler with the specified data
+    and parse the response for a success.
+    '''
+
     body = json.dumps(data)
-    request = urllib2.Request(URL, body, HEADERS)
+    result = handler.call(body)
 
-    try:
-        res = urllib2.urlopen(request)
-        return json.load(res)
-    except:
-        pass
-    finally:
-        f.close()
+    success = result['success']
 
-    return None
+    if not success:
+        msg = result['message']
+        logging.warn('Call to API returned without success: ' + msg)
 
-def auth(username, server, password):
-    # clear = "barfoo"
-    # salt = "foobar"
-    # hash = hashlib.md5( salt + clear ).hexdigest()
+    return success
 
-    api = call_api({'user': username, 'pw': password, 'server': server})
+def auth(h, username, server, password):
+    data = {'user': username, 'pw': password, 'server': server}
+    return call_api(h, data)
 
-    if api['success']:
-        return True
-    else:
-        return False
+def isuser(h, username, server):
+    # TODO
+    return False
 
-def isuser(username, server):
-    return True
+def setpass(h, username, server, password):
+    # TODO
+    return False
 
-def setpass(username, server, password):
-    return True
+def loop(handler):
+    while True:
+        data = from_ejabberd()
+        if data is None: break
 
-while True:
-    data = from_ejabberd()
-    if data is None: continue
+        success = False
+        cmd = data[0]
 
-    success = False
+        if cmd == 'auth':
+            logging.info('Processing "auth"')
 
-    if data[0] == "auth":
-        logging.info('Processing "auth"')
+            success = auth(handler, data[1], data[2], data[3])
+        elif cmd == 'isuser':
+            logging.info('Processing "isuser"')
 
-        success = auth(data[1], data[2], data[3])
-    elif data[0] == "isuser":
-        logging.info('Processing "isuser"')
+            success = isuser(handler, data[1], data[2])
+        elif cmd == 'setpass':
+            logging.info('Processing "setpass"')
 
-        success = isuser(data[1], data[2])
-    elif data[0] == "setpass":
-        logging.info('Processing "setpass"')
+            success = setpass(handler, data[1], data[2], data[3])
 
-        success = setpass(data[1], data[2], data[3])
+        to_ejabberd(success)
 
-    to_ejabberd(success)
+
+if __name__ == '__main__':
+    url, debug = get_args()
+
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+
+    logging.info('Using %s as base URL', url)
+    logging.info('Running in %s mode', 'debug' if debug else 'release')
+
+    handler = ApiHandler(url, HEADERS)
+    loop(handler)
+
+    logging.warn('Terminating ejabberd auth script')
+
+
+# vim: set et sw=4 sts=4 tw=80:
