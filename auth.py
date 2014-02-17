@@ -20,44 +20,13 @@ import json
 import logging
 import struct
 import sys
+import urllib2
 
 FALLBACK_URL = 'http://localhost:8000/auth/'
 HEADERS = {
     'Content-Type': 'application/json',
     'Accept': 'application/json' }
 
-
-class RequestsHandler:
-    '''
-    Small wrapper class to use 'requests' to execute HTTP requests.
-    '''
-    def __init__(self, url, headers):
-        import requests
-        logging.info('Using requests library for HTTP requests')
-
-        self.url = url
-        self.headers = headers
-
-    def call(self, data):
-        res = requests.post(self.url, data, self.headers)
-        return res.json()
-
-class UrlLibHandler:
-    '''
-    Small wrapper class to use 'urllib2' to execute HTTP requests.
-    '''
-
-    def __init__(self, url, headers):
-        import urllib2
-        logging.info('Using urllib2 library for HTTP requests')
-
-        self.url = url
-        self.headers = headers
-
-    def call(self, data):
-        req = urllib2.Request(self.url, data, self.headers)
-        res = urllib2.urlopen(req)
-        return json.load(res)
 
 class ApiHandler:
     '''
@@ -66,17 +35,20 @@ class ApiHandler:
     '''
 
     def __init__(self, url, headers):
-        self.handler = None
+        '''Initialize a ApiHandler instance.'''
 
-        # first we try the 'requests' library
-        # afterwards the 'urllib2' is tried to load
-        try:
-            self.handler = RequestsHandler(url, headers)
-        except ImportError:
-            self.handler = UrlLibHandler(url, headers)
+        self.url = url
+        self.headers = headers
 
     def call(self, data):
-        return self.handler.call(data)
+        '''
+        Call the specified authentication API using the
+        urllib2 library functions.
+        '''
+
+        req = urllib2.Request(self.url, data, self.headers)
+        res = urllib2.urlopen(req)
+        return json.load(res)
 
 class EjabberdAuth:
     '''
