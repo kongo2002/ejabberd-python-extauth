@@ -102,6 +102,8 @@ class EjabberdAuth:
         sys.stdout.write(token)
         sys.stdout.flush()
 
+        logging.debug('Returned %s success', 'with' if success else 'without')
+
     def __call_api(self, data):
         '''
         Call the JSON compatible API handler with the specified data
@@ -122,7 +124,7 @@ class EjabberdAuth:
     def __auth(self, username, server, password):
         '''Try to authenticate the user with the specified password'''
 
-        logging.info('Processing "auth"')
+        logging.debug('Processing "auth"')
         data = {'user': username, 'pw': password, 'server': server}
 
         return self.__call_api(data)
@@ -130,7 +132,7 @@ class EjabberdAuth:
     def __isuser(self, username, server):
         '''Try to find the specified user'''
 
-        logging.info('Processing "isuser"')
+        logging.debug('Processing "isuser"')
 
         # TODO
         return False
@@ -138,7 +140,7 @@ class EjabberdAuth:
     def __setpass(self, username, server, password):
         '''Try to set the user's password'''
 
-        logging.info('Processing "setpass"')
+        logging.debug('Processing "setpass"')
 
         # TODO
         return False
