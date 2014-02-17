@@ -18,6 +18,7 @@
 import argparse
 import json
 import logging
+import os
 import struct
 import sys
 import urllib2
@@ -195,9 +196,9 @@ if __name__ == '__main__':
     URL, DEBUG, LOG = get_args()
 
     LEVEL = logging.DEBUG if DEBUG else logging.INFO
-    logging.basicConfig(level=LEVEL,
-            format='%(asctime)s %(levelname)s %(message)s',
-            filename=LOG)
+    PID = str(os.getpid())
+    FMT = '[%(asctime)s]['+PID+'][%(levelname)s] %(message)s'
+    logging.basicConfig(level=LEVEL, format=FMT, filename=LOG)
 
     logging.info('Starting ejabberd auth script')
     logging.info('Using %s as base URL', URL)
