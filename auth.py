@@ -69,11 +69,13 @@ def get_args():
     p = argparse.ArgumentParser(description='ejabberd authentication script')
     p.add_argument('--url', help='base URL')
     p.add_argument('--debug', action='store_const', const=True, help='toggle debug mode')
+    p.add_argument('--log', help='log file')
 
     args = vars(p.parse_args())
     url = args['url'] if args['url'] else fallback_url
+    logfile = args['log'] if args['log'] else '/var/log/ejabberd/extauth.log'
 
-    return url, args['debug']
+    return url, args['debug'], logfile
 
 def from_ejabberd():
     '''
@@ -165,10 +167,12 @@ def loop(handler):
 
 
 if __name__ == '__main__':
-    url, debug = get_args()
+    url, debug, log = get_args()
 
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
+    level = logging.DEBUG if debug else logging.WARNING
+    logging.basicConfig(level=level,
+            format='%(asctime)s %(levelname)s %(message)s',
+            filename=log)
 
     logging.info('Using %s as base URL', url)
     logging.info('Running in %s mode', 'debug' if debug else 'release')
