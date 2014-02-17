@@ -64,11 +64,21 @@ class ApiHandler:
         return self.handler.call(data)
 
 class EjabberdAuth:
+    '''
+    Class that encapsulates the ejabberd authentication logic.
+    '''
 
-    def __init__(self, url, headers):
+    def __init__(self, url, headers, handler=None):
+        '''
+        Initialize a new EjabberdAuth instance.
+        '''
         self.url = url
         self.headers = headers
-        self.handler = ApiHandler(url, headers)
+
+        if handler is None:
+            self.handler = ApiHandler(url, headers)
+        else:
+            self.handler = handler
 
     def __from_ejabberd(self):
         '''
@@ -142,6 +152,12 @@ class EjabberdAuth:
         return False
 
     def loop(self):
+        '''
+        Start the endless loop that reads on stdin and passes
+        the authentication results to stdout towards the
+        connected ejabberd instance.
+        '''
+
         while True:
             data = self.__from_ejabberd()
             if data is None: break
