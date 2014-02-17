@@ -123,9 +123,7 @@ class EjabberdAuth:
         and send those to stdout.
         '''
 
-        answer = 0
-        if success: answer = 1
-
+        answer = 1 if success else 0
         token = struct.pack('>hh', 2, answer)
 
         sys.stdout.write(token)
@@ -149,18 +147,24 @@ class EjabberdAuth:
         return success
 
     def __auth(self, username, server, password):
+        '''Try to authenticate the user with the specified password'''
+
         logging.info('Processing "auth"')
         data = {'user': username, 'pw': password, 'server': server}
 
         return self.__call_api(data)
 
     def __isuser(self, username, server):
+        '''Try to find the specified user'''
+
         logging.info('Processing "isuser"')
 
         # TODO
         return False
 
     def __setpass(self, username, server, password):
+        '''Try to set the user's password'''
+
         logging.info('Processing "setpass"')
 
         # TODO
@@ -175,7 +179,8 @@ class EjabberdAuth:
 
         while True:
             data = self.__from_ejabberd()
-            if data is None: break
+            if data is None:
+                break
 
             success = False
             cmd = data[0]
@@ -197,12 +202,17 @@ def get_args():
     Parse some basic configuration from command line arguments
     '''
 
-    p = argparse.ArgumentParser(description='ejabberd authentication script')
-    p.add_argument('--url', help='base URL')
-    p.add_argument('--debug', action='store_const', const=True, help='toggle debug mode')
-    p.add_argument('--log', help='log file')
+    desc = 'ejabberd authentication script'
+    parser = argparse.ArgumentParser(description=desc)
 
-    args = vars(p.parse_args())
+    parser.add_argument('--url',
+            help='base URL')
+    parser.add_argument('--debug', action='store_const', const=True,
+            help='toggle debug mode')
+    parser.add_argument('--log',
+            help='log file')
+
+    args = vars(parser.parse_args())
     url = args['url'] if args['url'] else FALLBACK_URL
     logfile = args['log'] if args['log'] else '/var/log/ejabberd/extauth.log'
 
@@ -210,19 +220,19 @@ def get_args():
 
 
 if __name__ == '__main__':
-    url, debug, log = get_args()
+    URL, DEBUG, LOG = get_args()
 
-    level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(level=level,
+    LEVEL = logging.DEBUG if DEBUG else logging.INFO
+    logging.basicConfig(level=LEVEL,
             format='%(asctime)s %(levelname)s %(message)s',
-            filename=log)
+            filename=LOG)
 
     logging.info('Starting ejabberd auth script')
-    logging.info('Using %s as base URL', url)
-    logging.info('Running in %s mode', 'debug' if debug else 'release')
+    logging.info('Using %s as base URL', URL)
+    logging.info('Running in %s mode', 'debug' if DEBUG else 'release')
 
-    ejabberd = EjabberdAuth(url, HEADERS)
-    ejabberd.loop()
+    EJABBERD = EjabberdAuth(URL, HEADERS)
+    EJABBERD.loop()
 
     logging.warn('Terminating ejabberd auth script')
 
