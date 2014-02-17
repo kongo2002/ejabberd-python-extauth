@@ -23,11 +23,21 @@ import struct
 import sys
 import urllib2
 
+
+#
+# DEFAULTS AND CONSTANTS
+#
+
+DEFAULT_LOG = '/var/log/ejabberd/extauth.log'
 FALLBACK_URL = 'http://localhost:8000/auth/'
 HEADERS = {
     'Content-Type': 'application/json',
     'Accept': 'application/json' }
 
+
+#
+# CLASS DEFINITIONS
+#
 
 class ApiHandler:
     '''
@@ -189,7 +199,7 @@ def get_args():
 
     args = vars(parser.parse_args())
     url = args['url'] if args['url'] else FALLBACK_URL
-    logfile = args['log'] if args['log'] else '/var/log/ejabberd/extauth.log'
+    logfile = args['log'] if args['log'] else DEFAULT_LOG
 
     return url, args['debug'], logfile
 
@@ -199,7 +209,7 @@ if __name__ == '__main__':
 
     LEVEL = logging.DEBUG if DEBUG else logging.INFO
     PID = str(os.getpid())
-    FMT = '[%(asctime)s]['+PID+'][%(levelname)s] %(message)s'
+    FMT = '[%(asctime)s] ['+PID+'] [%(levelname)s] %(message)s'
     logging.basicConfig(level=LEVEL, format=FMT, filename=LOG)
 
     logging.info('Starting ejabberd auth script')
