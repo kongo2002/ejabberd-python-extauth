@@ -39,6 +39,15 @@ HEADERS = {
 # CLASS DEFINITIONS
 #
 
+class EjabberdError(Exception):
+    '''Class that holds ejabberd related errors.'''
+
+    def __init__(self, ex):
+        self.ex = ex
+
+    def __str__(self):
+        return repr(self.ex)
+
 class ApiHandler:
     '''
     Class to execute the HTTP requests to process
@@ -97,8 +106,8 @@ class EjabberdAuth:
             logging.debug('Read %d bytes: %s', size, result)
 
             return result.split(':')
-        except:
-            return None
+        except IOError:
+            raise EjabberdError('Failed to read from ejabberd via stdin')
 
     def __to_ejabberd(self, success):
         '''
@@ -163,8 +172,10 @@ class EjabberdAuth:
         '''
 
         while True:
-            data = self.__from_ejabberd()
-            if data is None:
+            try:
+                data = self.__from_ejabberd()
+            except EjabberdError, err:
+                logging.warn('Input error: ' + err)
                 break
 
             success = False
