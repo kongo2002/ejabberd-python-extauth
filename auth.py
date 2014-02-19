@@ -207,11 +207,11 @@ def get_args():
             nargs='?',
             metavar='URL',
             default=FALLBACK_URL,
-            help='base URL')
+            help='base URL (default: %(default)s)')
     # log file location
     parser.add_argument('-l', '--log',
             default=DEFAULT_LOG_DIR,
-            help='log directory')
+            help='log directory (default: %(default)s)')
     # debug log level
     parser.add_argument('-d', '--debug',
             action='store_const', const=True,
