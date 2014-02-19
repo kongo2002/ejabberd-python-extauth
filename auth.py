@@ -28,7 +28,7 @@ import urllib2
 # DEFAULTS AND CONSTANTS
 #
 
-DEFAULT_LOG = '/var/log/ejabberd/extauth.log'
+DEFAULT_LOG_DIR = '/var/log/ejabberd'
 FALLBACK_URL = 'http://localhost:8000/auth/'
 HEADERS = {
     'Content-Type': 'application/json',
@@ -199,8 +199,8 @@ def get_args():
             help='base URL')
     # log file location
     parser.add_argument('--log',
-            default=DEFAULT_LOG,
-            help='log file')
+            default=DEFAULT_LOG_DIR,
+            help='log directory')
     # debug log level
     parser.add_argument('--debug', action='store_const', const=True,
             help='toggle debug mode')
@@ -213,10 +213,17 @@ def get_args():
 if __name__ == '__main__':
     URL, DEBUG, LOG = get_args()
 
+    LOGFILE = LOG + '/extauth.log'
     LEVEL = logging.DEBUG if DEBUG else logging.INFO
     PID = str(os.getpid())
     FMT = '[%(asctime)s] ['+PID+'] [%(levelname)s] %(message)s'
-    logging.basicConfig(level=LEVEL, format=FMT, filename=LOG)
+
+    # redirect stderr
+    ERRFILE = LOG + '/extauth.err'
+    sys.stderr = open(ERRFILE, 'a+')
+
+    # configure logging
+    logging.basicConfig(level=LEVEL, format=FMT, filename=LOGFILE)
 
     logging.info('Starting ejabberd auth script')
     logging.info('Using %s as base URL', URL)
