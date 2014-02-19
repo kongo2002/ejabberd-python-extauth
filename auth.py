@@ -209,11 +209,12 @@ def get_args():
             default=FALLBACK_URL,
             help='base URL')
     # log file location
-    parser.add_argument('--log',
+    parser.add_argument('-l', '--log',
             default=DEFAULT_LOG_DIR,
             help='log directory')
     # debug log level
-    parser.add_argument('--debug', action='store_const', const=True,
+    parser.add_argument('-d', '--debug',
+            action='store_const', const=True,
             help='toggle debug mode')
 
     args = vars(parser.parse_args())
