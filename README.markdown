@@ -5,6 +5,10 @@ authentication in [ejabberd][ejabberd]. The script can be used to authenticate
 against a JSON API that processes the authentication requests of
 [ejabberd][ejabberd].
 
+The script probably cannot be used *as-it-is* but may serve as a starting point
+if you intent to create your own external authentication script for
+[ejabberd][ejabberd].
+
 
 ## Requirements
 
@@ -39,6 +43,31 @@ The authentication script accepts a few configuration arguments:
       -h, --help         show this help message and exit
       -l LOG, --log LOG  log directory (default: /var/log/ejabberd)
       -d, --debug        toggle debug mode
+
+
+## JSON API
+
+The examplary JSON API used in the script expects the following API endpoints.
+As described earlier the JSON calls are supposed to be an example for your own
+API.
+
+
+### Authenticate
+
+    POST BASE_URL/login
+
+``` json
+{ "username": "user@domain", "password": "***" }
+```
+
+
+### User exists
+
+    POST BASE_URL/exists
+
+``` json
+{ "username": "user@domain" }
+```
 
 
 [ejabberd]: http://ejabberd.im/
