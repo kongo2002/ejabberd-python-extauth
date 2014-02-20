@@ -8,8 +8,8 @@ against a JSON API that processes the authentication requests of
 
 ## Requirements
 
-* ejabberd (for sure ;-))
 * python < 3
+* JSON API
 
 
 ## Usage
@@ -25,7 +25,7 @@ ejabberd configuration in your `ejabberd.cfg`:
 
 ## Configuration
 
-The authentication script accepts a few configruation arguments:
+The authentication script accepts a few configuration arguments:
 
     $ ./auth.py -h
     usage: auth.py [-h] [-l LOG] [-d] [URL]
@@ -35,7 +35,7 @@ The authentication script accepts a few configruation arguments:
     positional arguments:
       URL                base URL (default: http://localhost:8000/auth/)
 
-      optional arguments:
+    optional arguments:
       -h, --help         show this help message and exit
       -l LOG, --log LOG  log directory (default: /var/log/ejabberd)
       -d, --debug        toggle debug mode
