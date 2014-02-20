@@ -40,7 +40,7 @@ HEADERS = {
 #
 
 class EjabberdError(Exception):
-    '''Class that holds ejabberd related errors.'''
+    '''Exception class that holds ejabberd related errors.'''
 
     def __init__(self, ex):
         self.ex = ex
@@ -50,12 +50,12 @@ class EjabberdError(Exception):
 
 class ApiHandler:
     '''
-    Class to execute the HTTP requests to process
+    Class to execute HTTP requests to process
     the authentication orders from ejabberd.
     '''
 
     def __init__(self, url, headers):
-        '''Initialize a ApiHandler instance.'''
+        '''Initialize an ApiHandler instance.'''
 
         self.url = url
         self.headers = headers
@@ -89,7 +89,7 @@ class EjabberdAuth:
 
     def __from_ejabberd(self):
         '''
-        Listen on stdin and read input data sent from to
+        Listen on stdin and read input data sent from the
         connected ejabberd instance.
         '''
 
@@ -111,8 +111,8 @@ class EjabberdAuth:
 
     def __to_ejabberd(self, success):
         '''
-        Convert the input data into an ejabberd compatible input
-        and send those to stdout.
+        Convert the input data into an ejabberd compatible
+        format and send it to stdout.
         '''
 
         answer = 1 if success else 0
@@ -141,7 +141,7 @@ class EjabberdAuth:
         return success
 
     def __auth(self, username, server, password):
-        '''Try to authenticate the user with the specified password'''
+        '''Try to authenticate the user with the specified password.'''
 
         logging.debug('Processing "auth"')
         data = {'user': username, 'pw': password, 'server': server}
@@ -149,7 +149,7 @@ class EjabberdAuth:
         return self.__call_api(data)
 
     def __isuser(self, username, server):
-        '''Try to find the specified user'''
+        '''Try to find the specified user.'''
 
         logging.debug('Processing "isuser"')
 
@@ -157,7 +157,7 @@ class EjabberdAuth:
         return False
 
     def __setpass(self, username, server, password):
-        '''Try to set the user's password'''
+        '''Try to set the user's password.'''
 
         logging.debug('Processing "setpass"')
 
@@ -195,7 +195,7 @@ class EjabberdAuth:
 
 def get_args():
     '''
-    Parse some basic configuration from command line arguments
+    Parse some basic configuration from command line arguments.
     '''
 
     # build command line argument parser
@@ -208,10 +208,12 @@ def get_args():
             metavar='URL',
             default=FALLBACK_URL,
             help='base URL (default: %(default)s)')
+
     # log file location
     parser.add_argument('-l', '--log',
             default=DEFAULT_LOG_DIR,
             help='log directory (default: %(default)s)')
+
     # debug log level
     parser.add_argument('-d', '--debug',
             action='store_const', const=True,
