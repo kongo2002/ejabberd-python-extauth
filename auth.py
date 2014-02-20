@@ -186,6 +186,9 @@ class EjabberdAuth:
         while True:
             try:
                 data = self.__from_ejabberd()
+            except KeyboardInterrupt:
+                logging.info('Terminating by user input')
+                break
             except EjabberdError, err:
                 logging.warn('Input error: ' + err)
                 break
