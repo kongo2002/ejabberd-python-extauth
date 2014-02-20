@@ -60,14 +60,16 @@ class ApiHandler:
         self.url = url
         self.headers = headers
 
-    def call(self, data):
+    def call(self, call, data):
         '''
         Call the specified authentication API using the
         urllib2 library functions.
         '''
 
-        req = urllib2.Request(self.url, data, self.headers)
+        url = '%s/%s' % (self.url, call)
+        req = urllib2.Request(url, data, self.headers)
         res = urllib2.urlopen(req)
+
         return json.load(res)
 
 class EjabberdAuth:
@@ -86,6 +88,12 @@ class EjabberdAuth:
             self.handler = ApiHandler(url, headers)
         else:
             self.handler = handler
+
+    @staticmethod
+    def make_jid(user, host):
+        '''Build a JID using the given user and host'''
+
+        return '%s@%s' % (user, host)
 
     def __from_ejabberd(self):
         '''
@@ -123,14 +131,14 @@ class EjabberdAuth:
 
         logging.debug('Returned %s success', 'with' if success else 'without')
 
-    def __call_api(self, data):
+    def __call_api(self, call, data):
         '''
         Call the JSON compatible API handler with the specified data
         and parse the response for a success.
         '''
 
         body = json.dumps(data)
-        result = self.handler.call(body)
+        result = self.handler.call(call, body)
 
         success = result['success']
 
@@ -144,17 +152,21 @@ class EjabberdAuth:
         '''Try to authenticate the user with the specified password.'''
 
         logging.debug('Processing "auth"')
-        data = {'user': username, 'pw': password, 'server': server}
 
-        return self.__call_api(data)
+        jid = make_jid(username, server)
+        data = {'username': jid, 'password': password}
+
+        return self.__call_api('login', data)
 
     def __isuser(self, username, server):
         '''Try to find the specified user.'''
 
         logging.debug('Processing "isuser"')
 
-        # TODO
-        return False
+        jid = make_jid(username, server)
+        data = {'username': jid}
+
+        return self.__call_api('exists', data)
 
     def __setpass(self, username, server, password):
         '''Try to set the user's password.'''
