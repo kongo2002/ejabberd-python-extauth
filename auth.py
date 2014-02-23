@@ -153,7 +153,7 @@ class EjabberdAuth:
 
         logging.debug('Processing "auth"')
 
-        jid = make_jid(username, server)
+        jid = EjabberdAuth.make_jid(username, server)
         data = {'username': jid, 'password': password}
 
         return self.__call_api('login', data)
@@ -163,7 +163,7 @@ class EjabberdAuth:
 
         logging.debug('Processing "isuser"')
 
-        jid = make_jid(username, server)
+        jid = EjabberdAuth.make_jid(username, server)
         data = {'username': jid}
 
         return self.__call_api('exists', data)
